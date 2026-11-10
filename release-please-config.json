@@ -11,7 +11,8 @@
         "terraform/modules/ai-search/README.md",
         "terraform/modules/apim-ai-gateway/README.md",
         "terraform/modules/rag-app-access/README.md"
-      ]
+      ],
+      "bump-minor-pre-major": true
     }
   }
 }
