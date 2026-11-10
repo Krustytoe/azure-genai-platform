@@ -1,0 +1,94 @@
+name: app
+
+on:
+  pull_request:
+    paths: ["app/**", "evals/**", ".github/workflows/app.yml"]
+  push:
+    branches: [main]
+    paths: ["app/**", "evals/**", ".github/workflows/app.yml"]
+
+permissions:
+  contents: read
+
+env:
+  PROMPTFOO_VERSION: 0.125.1
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: app/uv.lock
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+
+  # Pipeline contract evals: the real API, the real eval suite, the offline provider.
+  # Catches regressions in grounding, refusal, PII and injection handling on every PR.
+  evals:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: app/uv.lock
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: lts/*
+
+      - name: Start API (fake provider)
+        working-directory: app
+        env:
+          RAG_PROVIDER: fake
+        run: |
+          uv sync --frozen --no-dev
+          nohup .venv/bin/uvicorn --factory ragapi.main:create_app --port 8080 > "$RUNNER_TEMP/api.log" 2>&1 &
+          for _ in $(seq 1 30); do curl -sf localhost:8080/healthz && exit 0; sleep 1; done
+          cat "$RUNNER_TEMP/api.log"; exit 1
+
+      - name: promptfoo eval
+        env:
+          RAG_API_URL: http://localhost:8080
+          PROMPTFOO_DISABLE_TELEMETRY: "1"
+          PROMPTFOO_DISABLE_UPDATE: "1"
+        run: npx -y "promptfoo@${PROMPTFOO_VERSION}" eval -c evals/promptfooconfig.yaml --no-cache --no-table -o promptfoo-results.json
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: promptfoo-results
+          path: promptfoo-results.json
+          retention-days: 14
+
+  image:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build
+        run: docker build -t ragapi:ci app
+      - name: Smoke test (non-root, starts, answers)
+        run: |
+          test "$(docker run --rm --entrypoint id ragapi:ci -u)" = "10001"
+          docker run -d --name api -p 8080:8080 -e RAG_PROVIDER=fake \
+            -e RAG_FAKE_CORPUS_DIR=/corpus -v "$PWD/evals/corpus:/corpus:ro" ragapi:ci
+          for _ in $(seq 1 30); do curl -sf localhost:8080/healthz && break; sleep 1; done
+          curl -sf localhost:8080/v1/chat -H 'content-type: application/json' \
+            -d '{"question":"What is the domestic meal per diem?"}' | grep -q '"grounded":true'
+      - name: Trivy image scan (report only)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ragapi:ci
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          format: table
+          exit-code: "0"

@@ -1,0 +1,26 @@
+<policies>
+  <inbound>
+    <base />
+    <set-backend-service backend-id="${backend_id}" />
+    <!-- Callers authenticate to the gateway; the gateway authenticates to Azure OpenAI with its own identity. -->
+    <set-header name="api-key" exists-action="delete" />
+    <authentication-managed-identity resource="${audience}" />
+    <llm-emit-token-metric namespace="${metric_namespace}">
+      <dimension name="API ID" />
+      <dimension name="Product ID" />
+      <dimension name="Subscription ID" />
+      <dimension name="Deployment" value="@(context.Request.MatchedParameters[&quot;deployment-id&quot;])" />
+    </llm-emit-token-metric>
+  </inbound>
+  <backend>
+    <retry condition="@(context.Response.StatusCode == 429 || context.Response.StatusCode >= 500)" count="${retry_count}" interval="1" delta="1" max-interval="8" first-fast-retry="false">
+      <forward-request buffer-request-body="true" />
+    </retry>
+  </backend>
+  <outbound>
+    <base />
+  </outbound>
+  <on-error>
+    <base />
+  </on-error>
+</policies>

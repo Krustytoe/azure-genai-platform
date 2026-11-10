@@ -1,0 +1,37 @@
+name: evals-deployed
+
+# Run the eval suite against a deployed environment (real model, knowledge base
+# and guardrail). Use a runner that can reach the API, e.g. a self-hosted runner
+# in the VPC, if the endpoint is private.
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: Base URL of the deployed RAG API, e.g. https://rag.internal.example.com
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: lts/*
+      - name: promptfoo eval
+        env:
+          RAG_API_URL: ${{ inputs.api_url }}
+          PROMPTFOO_DISABLE_TELEMETRY: "1"
+          PROMPTFOO_DISABLE_UPDATE: "1"
+        run: npx -y promptfoo@0.125.1 eval -c evals/promptfooconfig.yaml --no-cache --no-table -o promptfoo-results.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: promptfoo-results-deployed
+          path: promptfoo-results.json
+          retention-days: 30

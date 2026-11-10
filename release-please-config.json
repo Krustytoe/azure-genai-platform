@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "include-component-in-tag": false,
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        "README.md",
+        "terraform/modules/openai-service/README.md",
+        "terraform/modules/ai-search/README.md",
+        "terraform/modules/apim-ai-gateway/README.md",
+        "terraform/modules/rag-app-access/README.md"
+      ]
+    }
+  }
+}

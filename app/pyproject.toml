@@ -1,0 +1,46 @@
+[project]
+name = "ragapi"
+version = "0.1.0"
+description = "Grounded, guarded, observable RAG API for Azure OpenAI and AI Search"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+  "azure-identity>=1.19,<2",
+  "fastapi>=0.115,<1",
+  "httpx>=0.28,<1",
+  "openai>=1.60,<4",
+  "opentelemetry-api>=1.30,<2",
+  "opentelemetry-exporter-otlp-proto-http>=1.30,<2",
+  "opentelemetry-sdk>=1.30,<2",
+  "pydantic-settings>=2.4,<3",
+  "uvicorn[standard]>=0.30,<1",
+]
+
+[project.scripts]
+ragapi-ingest = "ragapi.ingest:main"
+
+[dependency-groups]
+dev = [
+  "pytest>=8",
+  "pytest-cov>=6",
+  "ruff>=0.15",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "SIM", "RUF", "PT"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S106"]
+
+[tool.pytest.ini_options]
+addopts = "-q --cov=ragapi --cov-report=term-missing --cov-fail-under=90"
+testpaths = ["tests"]

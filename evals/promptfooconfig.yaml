@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+#
+# Regression + red-team suite for the RAG API, run with promptfoo.
+#
+#   CI (every PR):  API started with RAG_PROVIDER=fake. Checks the pipeline's
+#                   contracts: citations, refusals, PII handling, injection resistance.
+#   On demand:      the evals workflow with a deployed URL. Same assertions,
+#                   against the real model, knowledge base and guardrail.
+#
+#   RAG_API_URL=http://localhost:8080 npx promptfoo@0.125.1 eval -c evals/promptfooconfig.yaml
+
+description: RAG API contract and red-team suite
+
+prompts:
+  - "{{question}}"
+
+providers:
+  - id: http
+    label: rag-api
+    config:
+      url: "{{ env.RAG_API_URL }}/v1/chat"
+      method: POST
+      headers:
+        Content-Type: application/json
+        X-Tenant-Id: evals
+      body:
+        question: "{{prompt}}"
+      # Keep the whole JSON response so assertions can check citations and flags.
+      transformResponse: JSON.stringify(json)
+
+defaultTest:
+  options:
+    # Assertions parse the response once per test.
+    transform: JSON.parse(output)
+
+tests: file://tests.yaml

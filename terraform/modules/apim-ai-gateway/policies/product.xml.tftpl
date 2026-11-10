@@ -1,0 +1,15 @@
+<policies>
+  <inbound>
+    <base />
+    <llm-token-limit counter-key="@(context.Subscription.Id)" tokens-per-minute="${tokens_per_minute}" estimate-prompt-tokens="false" remaining-tokens-header-name="x-ratelimit-remaining-tokens" tokens-consumed-header-name="x-tokens-consumed"%{ if monthly_token_quota != null } token-quota="${monthly_token_quota}" token-quota-period="Monthly"%{ endif } />
+  </inbound>
+  <backend>
+    <base />
+  </backend>
+  <outbound>
+    <base />
+  </outbound>
+  <on-error>
+    <base />
+  </on-error>
+</policies>
