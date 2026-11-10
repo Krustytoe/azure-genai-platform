@@ -2,10 +2,8 @@ name: terraform
 
 on:
   pull_request:
-    paths: ["terraform/**", ".tflint.hcl", ".github/workflows/terraform.yml"]
   push:
     branches: [main]
-    paths: ["terraform/**", ".tflint.hcl", ".github/workflows/terraform.yml"]
 
 permissions:
   contents: read
