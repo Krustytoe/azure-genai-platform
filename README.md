@@ -2,6 +2,8 @@
 
 [![terraform](https://github.com/Krustytoe/azure-genai-platform/actions/workflows/terraform.yml/badge.svg)](https://github.com/Krustytoe/azure-genai-platform/actions/workflows/terraform.yml) [![app](https://github.com/Krustytoe/azure-genai-platform/actions/workflows/app.yml/badge.svg)](https://github.com/Krustytoe/azure-genai-platform/actions/workflows/app.yml) [![Release](https://img.shields.io/github/v/release/Krustytoe/azure-genai-platform)](https://github.com/Krustytoe/azure-genai-platform/releases/latest) [![License](https://img.shields.io/github/license/Krustytoe/azure-genai-platform)](LICENSE)
 
+> **When to use this repo:** Use this repo when you want to deploy or update a private AI question-answering app on Azure (Azure OpenAI and AI Search) behind an API gateway with per-team usage quotas and keyless authentication.
+
 A production-shaped **retrieval-augmented generation (RAG) platform on Azure OpenAI and Azure AI Search**: Terraform for keyless, private, content-filtered AI infrastructure behind an **APIM AI gateway** with per-team token budgets, a FastAPI service that answers questions only from approved documents (with citations), and an eval suite that gates every change.
 
 Works **unchanged in Azure commercial and Azure Government** (`cloud = "usgovernment"`). Token audiences, scopes and authority hosts all switch from one setting.
