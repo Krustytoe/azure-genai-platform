@@ -10,6 +10,8 @@ updates:
     groups:
       github-actions:
         patterns: ["*"]
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: uv
     directory: "/app"
@@ -20,6 +22,8 @@ updates:
     groups:
       python:
         patterns: ["*"]
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: docker
     directory: "/app"
@@ -27,3 +31,5 @@ updates:
       interval: weekly
     commit-message:
       prefix: "chore"
+    cooldown:
+      default-days: 7
