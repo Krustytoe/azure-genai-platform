@@ -15,7 +15,7 @@ Retrieval-augmented generation (RAG) platform on Azure OpenAI and Azure AI Searc
   - `app/src/ragapi/providers/` - `base.py` (`Retriever` / `ChatModel` protocols), `azure.py`, `fake.py` (offline provider).
   - `app/tests/` - pytest suite; the OpenAI SDK and httpx run against mock transports.
 - `evals/` - `promptfooconfig.yaml`, `tests.yaml`, and the sample policy corpus in `evals/corpus/`.
-- `.github/workflows/` - `terraform`, `app`, `security`, `evals-deployed`, `release-please`, `dependabot-auto-merge`, `ruler`.
+- `.github/workflows/` - `terraform`, `app`, `security`, `evals-deployed`, `release-please` (also attaches the image tarball, CycloneDX SBOM and signed attestations to each release), `scorecard` (OpenSSF), `dependabot-auto-merge`, `ruler`.
 
 ## Commands
 

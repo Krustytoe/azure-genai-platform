@@ -1,6 +1,6 @@
 # azure-genai-platform
 
-[![terraform](https://github.com/Krustytoe/azure-genai-platform/actions/workflows/terraform.yml/badge.svg)](https://github.com/Krustytoe/azure-genai-platform/actions/workflows/terraform.yml) [![app](https://github.com/Krustytoe/azure-genai-platform/actions/workflows/app.yml/badge.svg)](https://github.com/Krustytoe/azure-genai-platform/actions/workflows/app.yml) [![Release](https://img.shields.io/github/v/release/Krustytoe/azure-genai-platform)](https://github.com/Krustytoe/azure-genai-platform/releases/latest) [![License](https://img.shields.io/github/license/Krustytoe/azure-genai-platform)](LICENSE)
+[![terraform](https://github.com/Krustytoe/azure-genai-platform/actions/workflows/terraform.yml/badge.svg)](https://github.com/Krustytoe/azure-genai-platform/actions/workflows/terraform.yml) [![app](https://github.com/Krustytoe/azure-genai-platform/actions/workflows/app.yml/badge.svg)](https://github.com/Krustytoe/azure-genai-platform/actions/workflows/app.yml) [![Release](https://img.shields.io/github/v/release/Krustytoe/azure-genai-platform)](https://github.com/Krustytoe/azure-genai-platform/releases/latest) [![License](https://img.shields.io/github/license/Krustytoe/azure-genai-platform)](LICENSE) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Krustytoe/azure-genai-platform/badge)](https://scorecard.dev/viewer/?uri=github.com/Krustytoe/azure-genai-platform)
 
 > **When to use this repo:** Use this repo when you want to deploy or update a private AI question-answering app on Azure (Azure OpenAI and AI Search) behind an API gateway with per-team usage quotas and keyless authentication.
 
@@ -124,7 +124,16 @@ Then run the container with `app_environment`, plus `RAG_AZURE_OPENAI_API_KEY` s
 | `app` | ruff, pytest (90% coverage gate), promptfoo evals against the running API, Docker build + non-root smoke test + Trivy image scan |
 | `security` | Trivy IaC misconfiguration and dependency scans to the Security tab, plus a weekly re-scan |
 | `evals-deployed` | Manual: run the eval suite against a deployed URL |
-| `release-please` | Conventional-commit releases and changelog |
+| `release-please` | Conventional-commit releases and changelog; each release attaches the API image (`ragapi-<tag>.tar.gz`) and its CycloneDX SBOM, both with signed build-provenance and SBOM attestations |
+| `scorecard` | Weekly OpenSSF Scorecard supply-chain checks, published for the README badge |
+
+Verify a release image before loading it:
+
+```bash
+gh release download v0.2.0 -R Krustytoe/azure-genai-platform -p 'ragapi-*'
+gh attestation verify ragapi-v0.2.0.tar.gz -R Krustytoe/azure-genai-platform
+docker load < ragapi-v0.2.0.tar.gz
+```
 
 ## Related
 
